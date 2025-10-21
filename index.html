@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>텀블러 카드뉴스</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    overflow-x: hidden;  
+  }
+
+  /* ===== 1~2페이지 ===== */
+  .card1, .card2 {
+    width: 550px;
+    height: 800px;
+    margin: 80px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    position: relative;
+  }
+
+  .card1 img { width:100%; height:100%; object-fit:cover; }
+  .card2 .tumbler-img { width:100%; height:70%; object-fit:cover; }
+
+  .overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0)); }
+
+  .text { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; color:white; z-index:1; }
+  .text .bold { display:block; font-size:56px; font-weight:600; }
+  .text .sub { display:block; font-size:28px; margin-top:3px; }
+  .text .bold::before { content:"“"; } .text .bold::after { content:"”"; }
+
+  .caption { position:absolute; bottom:200px; left:50%; transform:translateX(-50%); font-size:40px; font-weight:600; color:#004d00; z-index:2; white-space:nowrap; }
+
+  .speech-bubble { position:absolute; bottom:120px; left:50%; transform:translateX(-50%); background:#007bff; color:white; padding:14px 24px; border-radius:25px; font-size:22px; display:flex; align-items:center; z-index:3; }
+  .speech-bubble::after { content:""; position:absolute; top:50%; left:99%; transform:translateY(-50%); width:0; height:0; border-top:12px solid transparent; border-bottom:12px solid transparent; border-left:12px solid #007bff; }
+  .emoji { margin-left:10px; font-size:24px; }
+
+  /* ===== 3~4페이지 ===== */
+  .card3, .card4 { width:550px; height:800px; margin:80px auto; border-radius:12px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.25); position:relative; }
+  .card3 .bg-img, .card4 .bg-img { width:100%; height:100%; object-fit:cover; }
+
+  .card3 .gradient-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(to right, rgba(0,0,0,0.6), rgba(0,0,0,0)); z-index:1; }
+
+  .overlay-dark { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:1; }
+
+  .speech-bubble3.left { position:absolute; left:90px; top:120px; background:#e0e0e0; color:black; padding:16px 20px; border-radius:20px; font-size:20px; max-width:80%; line-height:1.5; z-index:3; }
+  .speech-bubble3.left::after { content:""; position:absolute; left:-12px; top:20px; width:0; height:0; border-top:12px solid transparent; border-bottom:12px solid transparent; border-right:12px solid #e0e0e0; }
+  .speech-bubble3.left.small { left:110px; top:500px; font-size:18px; padding:12px 16px; max-width:60%; z-index:3; }
+  .speech-bubble3.left.small::after { content:""; position:absolute; left:-8px; top:14px; width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-right:10px solid #e0e0e0; }
+
+  .speech-bubble4.left { position:absolute; left:50px; top:220px; background:#e0e0e0; color:black; padding:16px 20px; border-radius:20px; font-size:20px; max-width:80%; line-height:1.5; z-index:3; }
+  .speech-bubble4.left::after { content:""; position:absolute; left:-12px; top:20px; width:0; height:0; border-top:12px solid transparent; border-bottom:12px solid transparent; border-right:12px solid #e0e0e0; }
+
+  .speech-bubble4.right { position:absolute; right:50px; top:500px; background:#007bff; color:white; padding:16px 20px; border-radius:20px; font-size:20px; max-width:80%; line-height:1.5; z-index:3; }
+  .speech-bubble4.right::after { content:""; position:absolute; right:-12px; top:20px; width:0; height:0; border-top:12px solid transparent; border-bottom:12px solid transparent; border-left:12px solid #007bff; }
+
+  /* ===== 5~6페이지 ===== */
+  .card5 { background-color:#f8f8f8; display:flex; justify-content:center; align-items:center; padding:80px 0; }
+  .card5 .card-content { display:flex; gap:40px; max-width:1100px; width:100%; justify-content:center; flex-wrap:wrap; }
+  .card5 .card-box { background:#fff; border-radius:12px; width:480px; position:relative; box-shadow:0 4px 12px rgba(0,0,0,0.1); padding:40px 30px 60px 30px; text-align:left; overflow:hidden; }
+  .card5 .card-header { background-color:#ef4444; color:#fff; font-weight:700; font-size:20px; text-align:center; padding:10px; border-radius:8px; margin-bottom:20px; }
+  .card5 .card-body p { color:#333; line-height:1.7; font-size:16px; }
+  .card5 .highlight { color:#e53935; font-weight:700; }
+  .card5 .card-number { position:absolute; font-size:160px; font-weight:900; color:rgba(239,68,68,0.1); bottom:10px; left:20px; pointer-events:none; }
+  .card5 .card-source { position:absolute; bottom:15px; left:30px; font-size:12px; color:#777; }
+
+  /* ===== 7페이지 ===== */
+  .card7 { position:relative; width:550px; height:800px; margin:80px auto; border-radius:12px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.25); background-image:url('그린워싱1.png'); background-size:cover; background-position:center; }
+  .card7 .img-bg-black { position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.2); z-index:1; }
+  .card7 img { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:400px; height:300px; object-fit:cover; border-radius:20px; z-index:2; }
+  .card7 .speech-bubble7 { position:absolute; bottom:80px; left:50%; transform:translateX(-50%); width:80%; background:#fff; padding:16px 20px; border-radius:20px; font-size:20px; line-height:1.5; box-shadow:0 3px 10px rgba(0,0,0,0.25); z-index:3; }
+  .card7 .speech-bubble7::after { display:none; }
+
+  /* ===== 8페이지 ===== */
+  .card8 { position:relative; width:550px; height:800px; margin:80px auto; border-radius:12px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.25); background-image:url('옷더미.png'); background-size:cover; background-position:center; }
+  .card8 .img-bg-black { position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.2); z-index:1; }
+  .card8 img { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:400px; height:300px; object-fit:cover; border-radius:20px; z-index:2; }
+  .card8 .speech-bubble8 { position:absolute; top:70px; left:50%; transform:translateX(-50%); width:75%; background:#fff; padding:16px 20px; border-radius:20px; box-shadow:0 3px 10px rgba(0,0,0,0.25); font-size:20px; line-height:1.5; z-index:3; }
+  .card8 .speech-bubble8::after { content:""; position:absolute; top:50%; left:-14px; transform:translateY(-50%); border-top:14px solid transparent; border-bottom:14px solid transparent; border-right:14px solid #fff; }
+  .card8 .source { position:absolute; bottom:15px; right:25px; font-size:13px; color:white; text-shadow:0 1px 4px rgba(0,0,0,0.8); z-index:3; }
+  /* ===== 9~10페이지 ===== */
+.card9, .card10 {
+  position:relative;
+  width:550px;
+  height:800px;
+  margin:80px auto;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  background-size:cover;
+  background-position:center;
+}
+
+.card9 { background-image:url('플라스틱1.png'); }
+.card10 { background-image:url('전기차2.png'); }
+
+.card9 .img-bg-black, .card10 .img-bg-black {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  background-color:rgba(0,0,0,0.2); z-index:1;
+}
+
+.card9 img, .card10 img {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:400px; height:300px; object-fit:cover; border-radius:20px; z-index:2;
+}
+
+.card9 .speech-bubble9, .card10 .speech-bubble10 {
+  position:absolute; top:70px; left:50%; transform:translateX(-50%);
+  width:75%; background:#fff; padding:16px 20px; border-radius:20px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.25); font-size:20px; line-height:1.5; z-index:3;
+}
+
+.card9 .speech-bubble9::after, .card10 .speech-bubble10::after {
+  content:""; position:absolute; top:50%; left:-14px; transform:translateY(-50%);
+  border-top:14px solid transparent; border-bottom:14px solid transparent; border-right:14px solid #fff;
+}
+
+.card9 .source, .card10 .source {
+  position:absolute; bottom:15px; right:25px; font-size:13px; color:white;
+  text-shadow:0 1px 4px rgba(0,0,0,0.8); z-index:3;
+}
+
+/* ===== 6.5페이지 : 그린워싱 도입 ===== */
+.card6 {
+  position: relative;
+  width: 550px;
+  height: 800px;
+  margin: 80px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  background-color: #000;
+}
+
+.card6 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 검은색 반투명 오버레이 */
+.card6 .overlay-dark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45); /* 어두운 반투명 레이어 */
+  z-index: 1;
+}
+
+/* 하단 흰색 그라디언트 (위로 투명해짐) */
+.card6 .overlay-white-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(to top, rgba(255,255,255,0.9), rgba(255,255,255,0));
+  z-index: 2;
+}
+
+.card6 .top-text {
+  position: absolute;
+  top: 300px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  text-align: center;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.6;
+  z-index: 3;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* 회색 말풍선 */
+.card6 .speech-bubble-gray {
+  position: absolute;
+  bottom: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f0f0f0;
+  color: #000;
+  padding: 16px 22px;
+  border-radius: 20px;
+  font-size: 22px;
+  font-weight: 500;
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.card6 .speech-bubble-gray::after {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-right: 12px solid #f0f0f0;
+}
+
+/* 파란 말풍선 */
+.card6 .speech-bubble-blue {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #007bff;
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 20px;
+  font-size: 20px;
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+.card6 .speech-bubble-blue::after {
+  content: "";
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 12px solid #007bff;
+}
+
+/* 공통 카드 스타일 */
+.card11, .card12 {
+  position: relative;
+  width: 550px;
+  height: 800px;
+  margin: 80px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* ===== 11페이지 ===== */
+.card11 .bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.card11 .overlay-dark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 1;
+}
+
+.card11 .speech-top,
+.card11 .problem-box {
+  position: relative;
+  z-index: 2;
+}
+
+.card11 .speech-top {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #000;
+  font-size: 20px;
+  padding: 14px 28px;
+  border-radius: 25px;
+  font-weight: 500;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+}
+
+.card11 .problem-box {
+  width: 80%;
+  margin: 20px auto;
+  background: rgba(255,255,255,0.95);
+  border-radius: 18px;
+  padding: 18px 22px;
+  color: #000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  backdrop-filter: blur(4px);
+}
+
+.card11 .problem-box h3 {
+  color: #196e1e;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  position: relative;
+}
+
+.card11 .problem-box h3 span {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 40px;
+  color: rgba(0,0,0,0.15);
+  font-weight: 700;
+}
+
+.card11 .problem-box p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #222;
+}
+
+.card11 .box1 { margin-top: 160px; }
+.card11 .box2 { margin-top: 25px; }
+.card11 .box3 { margin-top: 25px; }
+
+/* ===== 12페이지 ===== */
+.card12 .bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* 위쪽이 밝고 아래쪽은 투명 → 자연스러운 흰색 그라디언트 */
+.card12 .gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, transparent 100%);
+  z-index: 1;
+}
+
+.card12 .text-wrap {
+  position: relative;
+  z-index: 2;
+  top: 90px; /* 이전보다 약간 더 위로 */
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: left;
+  width: 80%;
+}
+
+.card12 h1 {
+  color: #000;
+  font-size: 44px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.card12 h1 span {
+  background-color: #1e8231;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+
+  @media (max-width:480px) {
+    .card1, .card2, .card3, .card4, .card5, .card6, .card7, .card8 { width:90%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 1~4페이지 -->
+<div class="card1">
+  <img src="텀블러1.png" alt="배경이미지1">
+  <div class="overlay"></div>
+  <div class="text">
+    <span class="bold">텀블러</span>
+    <span class="sub">진짜 환경에</span>
+    <span class="sub">도움되는 거 맞아?</span>
+  </div>
+</div>
+
+<div class="card2">
+  <img src="텀블러재활용.png" alt="텀블러 이미지" class="tumbler-img">
+  <div class="caption">텀블러 = 친환경</div>
+  <div class="speech-bubble">당연한 거 아니야?<span class="emoji">🤔</span></div>
+</div>
+
+<div class="card3">
+  <img src="종이컵.png" alt="종이컵 이미지" class="bg-img">
+  <div class="gradient-overlay"></div>
+  <div class="speech-bubble3 left">
+    맞아!<br><br>
+    종이컵은 한 개를 사용할 때마다<br>
+    <strong>매번 약 11g</strong>의 탄소가 배출 되는데,<br>
+    텀블러는 제작시 발생하는<br>
+    <strong>약 1,200g</strong>의 탄소를 제외하면<br>
+    사용시 추가 탄소가 발생하지 않아<br>
+    <strong>장기적으로 봤을 때 환경에 도움이 돼</strong> 😉
+  </div>
+  <div class="speech-bubble3 left small">하지만…</div>
+</div>
+
+<div class="card4">
+  <img src="환경오염.png" alt="환경오염 이미지" class="bg-img">
+  <div class="overlay-dark"></div>
+  <div class="speech-bubble4 left">
+    오히려 텀블러가<br>
+    <strong>또 다른 환경오염의 원인</strong>이 되기도 한다는거,<br>
+    알고 있어?
+  </div>
+  <div class="speech-bubble4 right">
+    뭐? 몰.랐.어. 😨
+  </div>
+</div>
+
+<!-- 5~6페이지 -->
+<section class="card card5">
+  <div class="card-content">
+    <div class="card-box">
+      <div class="card-header">초기 생산과 세척, 폐기 단계 탄소 배출</div>
+      <div class="card-body">
+        <p>
+          생산과정에서 텀블러는 <span class="highlight">종이컵의 24배</span>,<br>
+          <span class="highlight">일회용 플라스틱 컵보다 13배</span><br>
+          높은 온실가스를 배출<br><br>
+          + 세척, 폐기 단계에서도 환경 부담이 발생
+        </p>
+      </div>
+      <div class="card-number">1</div>
+      <p class="card-source">출처: science on, 2023, 환경을 위해 텀블러를 쓰는 당신, ‘환경 발밑’일 수도?</p>
+    </div>
+
+    <div class="card-box">
+      <div class="card-header">미사용 보관과 적은 사용</div>
+      <div class="card-body">
+        <p>
+          설문조사 응답자 중 <span class="highlight">61.5%</span>가<br>
+          보유 다회용품 중 <span class="highlight">‘쓴던 제품만’</span> 사용.<br><br>
+          인당 평균 <span class="highlight">6개 이상의 텀블러</span>를 가지고 있지만<br>
+          1개당 평균 <span class="highlight">45.8회 이용</span>에 그침
+        </p>
+      </div>
+      <div class="card-number">2</div>
+      <p class="card-source">출처: science on, 2023, 환경을 위해 텀블러를 쓰는 당신, ‘환경 발밑’일 수도?</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6.5페이지 : 그린워싱 도입 -->
+<div class="card6">
+  <img src="텀블러2.png" alt="텀블러 이미지">
+  <div class="overlay-dark"></div>
+  <div class="overlay-white-bottom"></div>
+
+  <div class="top-text">
+    계속해서 새로운 텀블러를 생산하는 기업과<br>
+    소비, 방치를 반복하는 소비자.<br><br>
+    ‘환경을 위한다’는 말 뒤에 숨은 의도, 혹시…
+  </div>
+
+  <div class="speech-bubble-gray">“그린워싱” 아닐까?</div>
+  <div class="speech-bubble-blue">그린워싱? 그게 뭔데?</div>
+</div>
+
+<!-- 7페이지 -->
+<div class="card7">
+  <div class="img-bg-black"></div>
+  <img src="그린워싱뜻.png" alt="그린워싱 뜻 이미지">
+  <div class="speech-bubble7">
+    즉, 소비자들이 친환경 제품에 대한<br>
+    선호가 높아진 점을 이용한 ‘위장 환경주의’ 전략이야.
+  </div>
+</div>
+
+<!-- 8페이지 -->
+<div class="card8">
+  <div class="img-bg-black"></div>
+  <img src="리사이클의류.png" alt="리사이클 의류 이미지">
+  <div class="speech-bubble8">
+    그린워싱은 텀블러 뿐만의 문제가 아니야.<br>
+    몇가지 예시를 들어줄게. 첫번째로는
+  </div>
+  <div class="source">출처: 환경연구소, 2024</div>
+</div>
+<!-- 9페이지 -->
+<div class="card9">
+  <div class="img-bg-black"></div>
+  <img src="바이오플라스틱.png" alt="바이오플라스틱 이미지">
+  <div class="speech-bubble9">
+    두번째 예시
+  </div>
+  <div class="source">출처: 환경연구소, 2024</div>
+</div>
+
+<!-- 10페이지 -->
+<div class="card10">
+  <div class="img-bg-black"></div>
+  <img src="전기차.png" alt="전기차 이미지">
+  <div class="speech-bubble10">
+    세번째 예시
+  </div>
+  <div class="source">출처: 환경연구소, 2024</div>
+</div>
+
+<!-- 11페이지 : 그린워싱의 진짜 문제점 -->
+<div class="card11">
+  <img src="그린워싱2.png" alt="그린워싱 이미지" class="bg-img">
+  <div class="overlay-dark"></div>
+
+  <div class="speech-top">그린워싱의 <strong>진짜 문제점</strong>은</div>
+
+  <div class="problem-box box1">
+    <h3>소비자 신뢰 저하 <span>1</span></h3>
+    <p>소비자에게 혼란을 주고 친환경 제품에 대한 신뢰도를 떨어뜨림.<br>
+       이는 실제로 환경에 도움되는 제품을 선택하는 것을 방해함.</p>
+  </div>
+
+  <div class="problem-box box2">
+    <h3>진짜 친환경 기업의 피해 <span>2</span></h3>
+    <p>대기업이 ‘가짜 친환경’ 이미지를 대대적으로 홍보하면<br>
+       작지만 진짜로 지속 가능한 브랜드들이 시장에서 보이지 않게 됨.</p>
+  </div>
+
+  <div class="problem-box box3">
+    <h3>환경 문제 해결 지연 <span>3</span></h3>
+    <p>기업들이 ‘홍보용 친환경’으로 여론을 잠재우면,<br>
+       정책적 변화나 산업 구조 개선이 늦어짐.</p>
+  </div>
+</div>
+
+<!-- 12페이지 : 마무리 메시지 -->
+<div class="card12">
+  <img src="새싹2.png" alt="새싹 이미지" class="bg-img">
+  <div class="gradient-overlay"></div>
+
+  <div class="text-wrap">
+    <h1>이젠<br>그린워싱에 속지말고<br>
+      <span>‘진짜 친환경’</span>을<br>지켜내자!</h1>
+  </div>
+</div>
+
+
+
+</body>
+</html>
+
